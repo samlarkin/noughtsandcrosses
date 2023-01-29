@@ -1,31 +1,42 @@
+"""noughtsandcrosses
+
+A simple implementation of noughts and crosses (tic tac toe), playable in
+a terminal.
+
+Sam Larkin
+"""
 from random import choice
 
 
 class Board:
+    """Noughts and crosses game board"""
+
     def __init__(self):
-        row = [' '] * 3
-        self.state = [row[:], row[:], row[:]]
-        self.first_move = choice('OX')
+        row = [" "] * 3
+        self.state = [row[:] for _ in range(3)]
+        self.first_move = choice("OX")
         self.show()
         print(f"{self.first_move} Move first (randomly selected)")
         self.mover = self.first_move
 
     def show(self):
-        col_names = '     A   B   C  '
-        hline = '   +---+---+---+'
+        """Show the game board"""
+        col_names = "     A   B   C  "
+        hline = "   +---+---+---+"
         print(col_names)
         print(hline)
         for index, row in enumerate(self.state):
-            print(f'{index}  | {row[0]} | {row[1]} | {row[2]} |')
+            print(f"{index}  | {row[0]} | {row[1]} | {row[2]} |")
             print(hline)
+        print()
 
     def end_turn(self):
-        if self.mover == 'O':
-            self.mover = 'X'
-        elif self.mover == 'X':
-            self.mover = 'O'
+        if self.mover == "O":
+            self.mover = "X"
+        elif self.mover == "X":
+            self.mover = "O"
         else:
-            raise ValueError('mover should be O or X')
+            raise ValueError("mover should be O or X")
         self.show()
 
     def move(self, coord):
@@ -33,25 +44,25 @@ class Board:
             assert isinstance(coord, str)
             assert len(coord) == 2
         except AssertionError:
-            print('Coordinate must be a string of the form: A0')
-            player_input = input(f'Make your move, player {self.mover}!\n')
+            print("Coordinate must be a string of the form: A0")
+            player_input = input(f"Make your move, player {self.mover}!\n")
             self.move(player_input)
             return
 
         try:
-            x_map = {'a': 0, 'b': 1, 'c': 2}
+            x_map = {"a": 0, "b": 1, "c": 2}
             x = x_map[coord[0].lower()]
             y = int(coord[1])
-            assert self.state[y][x] == ' '
+            assert self.state[y][x] == " "
             self.state[y][x] = self.mover
         except IndexError:
-            print('Coordinate must be a string of the form: A0')
-            player_input = input(f'Make your move, player {self.mover}!\n')
+            print("Coordinate must be a string of the form: A0")
+            player_input = input(f"Make your move, player {self.mover}!\n")
             self.move(player_input)
             return
         except AssertionError:
-            print('Invalid move. Pick an empty square.')
-            player_input = input(f'Make your move, player {self.mover}!\n')
+            print("Invalid move. Pick an empty square.")
+            player_input = input(f"Make your move, player {self.mover}!\n")
             self.move(player_input)
             return
         self.end_turn()
@@ -95,9 +106,9 @@ class Board:
         if self.game_won() is True:
             return False
         for row in self.state:
-            if ' ' in row:
+            if " " in row:
                 return False
-        print('Stalemate. No more valid moves are possible.')
+        print("Stalemate. No more valid moves are possible.")
         return True
 
     def game_over(self):
@@ -109,24 +120,20 @@ class Board:
 
 
 def _three_in_a_row(seq):
-    if seq[0] == seq[1] and seq[1] == seq[2] and seq[0] != ' ':
+    if seq[0] == seq[1] and seq[1] == seq[2] and seq[0] != " ":
         return True
     return False
-
-
-def congratulate(winner):
-    print(f'Congratulations, {winner}! You have won!')
 
 
 def main():
     board = Board()
     while board.game_over() is False:
-        player_input = input(f'Make your move, player {board.mover}!\n')
+        player_input = input(f"Make your move, player {board.mover}!\n")
         board.move(player_input)
     if board.stalemate() is False:
-        winner = 'OX'.replace(board.mover, '')
-        congratulate(winner)
+        winner = "OX".replace(board.mover, "")
+        print(f"Congratulations, {winner}! You have won!")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
