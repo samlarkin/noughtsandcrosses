@@ -50,7 +50,7 @@ class Board:
         except ValueError:
             print(f"Something went wrong! Current player should be O or X, " \
                   f"not {self.mover}")
-            
+
         print(self)
 
     def move(self):
@@ -69,16 +69,17 @@ class Board:
                 f"which you would like to place a marker:\n..."
             )
             print()
-            
+
             x_key = coord[0].lower()
-            y = int(coord[1])
+            col_index = int(coord[1])
 
             try:
+                # Validate user input
                 assert len(coord) == 2
                 assert x_key in ["a", "b", "c"]
-                assert y in [0, 1, 2]
-                x = x_map[x_key]
-                assert self.state[y][x] == " "
+                assert col_index in [0, 1, 2]
+                row_index = x_map[x_key]
+                assert self.state[col_index][row_index] == " "
                 break
 
             except AssertionError:
@@ -89,41 +90,28 @@ class Board:
                 )
                 continue
 
-        self.state[y][x] = self.mover
+        # Place current player's mark in the selected location
+        self.state[col_index][row_index] = self.mover
 
-    def _check_rows(self):
-        for row in self.state:
-            if _three_in_a_row(row) is True:
-                return True
-        return False
+    def game_won(self):
+        """Returns True if the game has been won else returns false
 
-    def _check_cols(self):
-        cols = [[], [], []]
-        for row in self.state:
-            for index, entry in enumerate(row):
-                cols[index].append(entry)
-        for col in cols:
-            if _three_in_a_row(col) is True:
-                return True
-        return False
+        Transposes the board state and gets the diagonals, then checks whether
+        any of the 'combinations' i.e. rows, columns, and diagonals, is a
+        matching set of 3 X or 3 O marks (meaning the game has been won).
 
-    def _check_diags(self):
+        """
+        cols = [list(col) for col in zip(*self.state)]
         diags = [
             [self.state[0][0], self.state[1][1], self.state[2][2]],
             [self.state[0][2], self.state[1][1], self.state[2][0]]
         ]
-        for diag in diags:
-            if _three_in_a_row(diag) is True:
-                return True
-        return False
+        combinations = self.state + cols + diags
 
-    def game_won(self):
-        if self._check_rows() is True:
-            return True
-        elif self._check_cols() is True:
-            return True
-        elif self._check_diags() is True:
-            return True
+        for combo in combinations:
+            if _three_in_a_row(combo):
+                return True
+
         return False
 
     def game_over(self):
@@ -161,7 +149,7 @@ def main():
     while not board.game_over():
         board.move()
         board.end_turn()
-    
+
     if board.game_won():
         winner = "OX".replace(board.mover, "")
         print(f"Congratulations, {winner}! You have won!")
