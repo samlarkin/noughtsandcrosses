@@ -39,4 +39,4 @@ which you would like to place a marker:
 ```
 
 ## To Do
-[ ] Implement player vs computer mode
+* [ ] Implement player vs computer mode
