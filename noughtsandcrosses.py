@@ -7,10 +7,36 @@ command line (with two players using a single computer).
 from random import choice
 
 
+MARKERS = "OX"
+EMPTY_STATE = [
+    [" ", " ", " "],
+    [" ", " ", " "],
+    [" ", " ", " "],
+]
+
+
+class Player:
+    """Player in the game of noughts and crosses"""
+
+    def __init__(self, name, marker):
+        """Initialise player with a name and marker (O or X)
+
+        Args:
+            name (str): Player name
+            marker (str): Player marker (O or X)
+
+        """
+        self.name = name
+        self.marker = marker
+
+    def __repr__(self):
+        return f"Player {marker}: {self.name}"
+
+
 class Board:
     """Noughts and crosses game board"""
 
-    def __init__(self):
+    def __init__(self, state=EMPTY_STATE):
         """Set up the game board for noughts and crosses
 
         Initialises Board.state as a 2D list representing the 3x3 game board,
@@ -18,9 +44,8 @@ class Board:
         X) to make the first move.
 
         """
-        row = [" "] * 3
-        self.state = [row[:] for _ in range(3)]
-        self.mover = choice("OX")
+        self.state = state
+        self.mover = choice(MARKERS)
         print(self)
         print(f"\n{self.mover} moves first (randomly selected)")
 
@@ -44,8 +69,8 @@ class Board:
 
         """
         try:
-            i = "OX".index(self.mover) - 1
-            self.mover = "OX"[i]
+            i = MARKERS.index(self.mover) - 1
+            self.mover = MARKERS[i]
 
         except ValueError:
             print(f"Something went wrong! Current player should be O or X, " \
@@ -70,12 +95,13 @@ class Board:
             )
             print()
 
-            x_key = coord[0].lower()
-            col_index = int(coord[1])
-
             try:
                 # Validate user input
                 assert len(coord) == 2
+
+                x_key = coord[0].lower()
+                col_index = int(coord[1])
+
                 assert x_key in ["a", "b", "c"]
                 assert col_index in [0, 1, 2]
                 row_index = x_map[x_key]
@@ -93,7 +119,16 @@ class Board:
         # Place current player's mark in the selected location
         self.state[col_index][row_index] = self.mover
 
-    def game_won(self):
+
+class GamePvP:
+    """Player vs Player game of noughts and crosses"""
+
+    def __init__(self, state, players):
+        """Set up a game of noughts and crosses between two players"""
+        self.board = Board(state)
+        self.players = (Player(*players[0]), Player(*players[1]))
+
+    def is_won(self):
         """Returns True if the game has been won else returns false
 
         Transposes the board state and gets the diagonals, then checks whether
@@ -101,29 +136,35 @@ class Board:
         matching set of 3 X or 3 O marks (meaning the game has been won).
 
         """
-        cols = [list(col) for col in zip(*self.state)]
+        rows = self.board.state
+        cols = [list(col) for col in zip(*rows)]
         diags = [
-            [self.state[0][0], self.state[1][1], self.state[2][2]],
-            [self.state[0][2], self.state[1][1], self.state[2][0]]
+            [rows[0][0], rows[1][1], rows[2][2]],
+            [rows[0][2], rows[1][1], rows[2][0]]
         ]
-        combinations = self.state + cols + diags
+        combinations = rows + cols + diags
 
-        for combo in combinations:
-            if _three_in_a_row(combo):
+        for sequence in combinations:
+            if _three_in_a_row(sequence):
                 return True
-
         return False
 
-    def game_over(self):
+    def is_over(self):
         """Returns True if the game is over else returns False"""
-        if self.game_won() is True:
+        if self.is_won() is True:
             return True
 
-        for row in self.state:
+        for row in self.board.state:
             if " " in row:
                 return False
-
         return True
+
+    def save(self, fn):
+        """Save game to json file"""
+        pass
+
+    def load(self, fn):
+        """Load game from json file"""
 
 
 def _three_in_a_row(seq):
@@ -136,22 +177,21 @@ def _three_in_a_row(seq):
             bool: True if winning condition is met else false
 
     """
-    if seq[0] == seq[1] and seq[0] == seq[2] and "OX".find(seq[0]) != -1:
+    if seq[0] == seq[1] and seq[0] == seq[2] and MARKERS.find(seq[0]) != -1:
         return True
-
     return False
 
 
 def main():
     """Main game logic"""
-    board = Board()
+    game = GamePvP(EMPTY_STATE, players=(("Tom", "O"), ("Jerry", "X")))
 
-    while not board.game_over():
-        board.move()
-        board.end_turn()
+    while not game.is_over():
+        game.board.move()
+        game.board.end_turn()
 
-    if board.game_won():
-        winner = "OX".replace(board.mover, "")
+    if game.is_won():
+        winner = MARKERS.replace(game.board.mover, "")
         print(f"Congratulations, {winner}! You have won!")
 
     else:
